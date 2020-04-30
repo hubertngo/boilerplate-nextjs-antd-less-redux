@@ -32,10 +32,9 @@ export default async ({ url, options, params } = mandatory(), cb = f => f) => {
 
 		const opts = merge(defaultOptions, options);
 
-		// set token
-		// if (AuthStorage.loggedIn) {
-		// 	options.headers.Authorization = AuthStorage.token;
-		// }
+		// Set token
+		const userToken = await getUserToken();
+		opts.headers.Authorization = userToken;
 
 		let uri = API_URL + url;
 
