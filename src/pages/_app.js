@@ -10,8 +10,16 @@
 import React from 'react';
 import App from 'next/app';
 
+import { Provider } from 'react-redux';
+import withRedux from 'next-redux-wrapper';
+import withReduxSaga from 'next-redux-saga';
+import createStore from 'src/redux/store';
+
 import NProgress from 'nprogress';
 import Router from 'next/router';
+
+import { getUserAuth } from 'src/utils/Auth';
+import { getUserAuthSuccess } from 'src/redux/actions/auth.action';
 
 import 'src/theme/index.less';
 import 'src/theme/custom.less';
@@ -24,12 +32,27 @@ Router.events.on('routeChangeStart', url => {
 Router.events.on('routeChangeComplete', () => NProgress.done());
 Router.events.on('routeChangeError', () => NProgress.done());
 
-export default class MyApp extends App {
+class MyApp extends App {
+
+	componentDidMount() {
+		const initialUser = async () => {
+			const objUser = await getUserAuth();
+			if (objUser) {
+				this.props.store.dispatch(getUserAuthSuccess(objUser || {}));
+			}
+		};
+		initialUser();
+	}
+
 	render() {
-		const { Component, pageProps } = this.props;
+		const { Component, pageProps, store } = this.props;
 
 		return (
-			<Component {...pageProps} />
+			<Provider store={store}>
+				<Component {...pageProps} />
+			</Provider>
 		);
 	}
 }
+
+export default withRedux(createStore)(withReduxSaga(MyApp));
