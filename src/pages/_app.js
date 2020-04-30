@@ -13,8 +13,6 @@ import App from 'next/app';
 import NProgress from 'nprogress';
 import Router from 'next/router';
 
-import MainLayout from 'src/components/MainLayout';
-
 import 'src/theme/index.less';
 import 'src/theme/custom.less';
 
@@ -29,12 +27,9 @@ Router.events.on('routeChangeError', () => NProgress.done());
 export default class MyApp extends App {
 	render() {
 		const { Component, pageProps } = this.props;
-		const Layout = Component.Layout || MainLayout;
 
 		return (
-			<Layout>
-				<Component {...pageProps} />
-			</Layout>
+			<Component {...pageProps} />
 		);
 	}
 }

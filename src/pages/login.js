@@ -6,14 +6,17 @@
 * Created: 2020-04-07 10:09:53
 *------------------------------------------------------- */
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 // import PropTypes from 'prop-types';
 
 import { Form, Input, Button } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
-
+import { Router } from 'src/routes';
 import BtnFacebook from 'src/components/Forms/BtnFacebook';
 import BtnGoogle from 'src/components/Forms/BtnGoogle';
+import { federatedSignInFB, federatedSignInGG, normalLogin, Lib } from 'src/utils/Auth';
+
+const { Auth, Hub } = Lib;
 
 const propTypes = {
 	// classes: PropTypes.object.isRequired,
@@ -24,8 +27,43 @@ const defaultProps = {
 };
 
 const Login = (props) => {
-	const onFinish = values => {
-		console.log('Received values of form: ', values);
+	const [loading, setLoading] = useState(false);
+	const [err, setErr] = useState(null);
+	useEffect(() => {
+		Auth.currentSession()
+			.then(() => {
+				Router.pushRoute('/');
+			})
+			.catch(() => {
+				Hub.listen('auth', ({ payload: { event, data } }) => {
+					switch (event) {
+						case 'signIn':
+							console.log('push');
+							Router.pushRoute('/');
+							break;
+						case 'signOut':
+							console.log('signOut');
+							break;
+						default:
+							console.log('nothing!', event, data);
+					}
+				});
+			});
+	}, []);
+	const onFinish = async (values) => {
+		try {
+			setLoading(true);
+			const user = await normalLogin(values.username, values.password);
+
+			if (user) {
+				setLoading(false);
+				Router.pushRoute('/');
+			}
+		} catch (error) {
+			setLoading(false);
+			setErr(error);
+			console.log(error);
+		}
 	};
 
 	return (
@@ -89,15 +127,17 @@ const Login = (props) => {
 					</div>
 				</Form.Item>
 
-				<Button type="primary" block htmlType="submit" className="login-form-button">
+				<Button loading={loading} type="primary" block htmlType="submit" className="login-form-button">
 					Login
 				</Button>
+				{err &&
+					<p>{err}</p>}
 				<p className="text-center mt-5 text-note">
 					Or
 				</p>
 				<div className="d-flex align-items-center justify-content-center">
-					<BtnFacebook className="m-1" />
-					<BtnGoogle className="m-1" />
+					<BtnFacebook className="m-1" onClick={federatedSignInFB} />
+					<BtnGoogle className="m-1" onClick={federatedSignInGG} />
 				</div>
 			</Form>
 		</div>

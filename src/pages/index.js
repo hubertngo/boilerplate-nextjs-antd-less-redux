@@ -10,17 +10,32 @@ import React from 'react';
 // import PropTypes from 'prop-types';
 
 import Head from 'next/head';
+import LoginRequire from 'src/layout/LoginRequire';
+import Layout from 'src/layout/MainLayout';
+import { Button } from 'antd';
+import { logout } from 'src/utils/Auth';
+import { Router } from 'src/routes';
 
 const Index = (props) => {
 	// const { } = props;
+	const handleLogout = () => {
+		logout().then(() => {
+			Router.push('/login');
+		});
+	};
 
 	return (
-		<div className="">
-			<Head>
-				<title>Boilerplate</title>
-			</Head>
-			Dashboard
-		</div>
+		<LoginRequire>
+			<Layout>
+				<Head>
+					<title>Boilerplate</title>
+				</Head>
+				Dashboard
+				<Button size="large" style={{ marginLeft: 8 }} onClick={handleLogout}>
+					Cancel
+				</Button>
+			</Layout>
+		</LoginRequire>
 	);
 };
 
